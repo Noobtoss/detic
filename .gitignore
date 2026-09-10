@@ -1,3 +1,13 @@
+# PyCharm
+.idea
+
+# OS generated files
+.DS_Store
+.DS_Store?
+.Trashes
+ehthumbs.db
+Thumbs.db
+
 third_party/detectron2
 ./models
 configs-experimental
@@ -5,8 +15,8 @@ experiments
 # output dir
 index.html
 data/*
-slurm/
-slurm
+# slurm/
+# slurm
 slurm-output
 slurm-output/
 output
