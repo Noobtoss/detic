@@ -71,7 +71,7 @@ def build_config(args):
         ),
         "config": args.model_cfg,
         "weights": args.weights,
-        "output": args.work_dir if args.work_dir is not None else Path("../../runs") / args.run_name,
+        "output": args.work_dir if args.work_dir is not None else Path(__file__).resolve().parents[2] / "runs" / args.run_name,
         "epochs": args.epochs,
         "batch": args.batch,
         "imgsz": args.imgsz,
