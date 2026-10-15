@@ -1,16 +1,14 @@
 import argparse
+from argparse import Namespace
 import sys
 import warnings
-from argparse import Namespace
 from copy import deepcopy
 from pathlib import Path
+from detectron2.checkpoint import DetectionCheckpointer
+from detectron2.utils.logger import setup_logger
+import train_net
 
-if __package__:
-    from .load_coco_datasets import load_coco_datasets
-    from .run_training import run_training
-else:
-    from load_coco_datasets import load_coco_datasets
-    from run_training import run_training
+from build_config import build_config
 
 
 DEFAULT_ARGS = {
@@ -34,9 +32,39 @@ DEFAULT_ARGS = {
     ),
 }
 
+class CustomCheckpointer(DetectionCheckpointer):
+    def _load_model(self, checkpoint):
+        # Keep this dataset's fixed CLIP vocabulary when loading old weights.
+        checkpoint["model"] = {
+            key: value for key, value in checkpoint["model"].items()
+            if not key.endswith("cls_score.zs_weight")
+        }
+        incompatible = super()._load_model(checkpoint)
+        incompatible.missing_keys[:] = [
+            key for key in incompatible.missing_keys
+            if not key.endswith("cls_score.zs_weight")
+        ]
+        return incompatible
 
 def train(config):
-    return run_training(**config)
+    config = config
+    output = Path(config.OUTPUT_DIR)
+    setup_logger(output=config.OUTPUT_DIR, name="detectron2")
+    logger = setup_logger(output=config.OUTPUT_DIR, name="detic.custom")
+    logger.info("Training groups: %s; classes: %s", config.DATALOADER.DATASET_ANN, config.MODEL.ROI_HEADS.NUM_CLASSES)
+
+    model = train_net.build_model(config)
+    if not config.RESUME:
+        CustomCheckpointer(model).load(config.MODEL.WEIGHTS)
+
+    # Initial weights are already loaded with the custom vocabulary preserved.
+    # On resume, train_net restores model and optimizer from last_checkpoint.
+    train_cfg = config.clone()
+    train_cfg.defrost()
+    train_cfg.MODEL.WEIGHTS = ""
+    train_cfg.freeze()
+    train_net.do_train(train_cfg, model, resume=config.RESUME)
+    train_net.do_test(train_cfg, model)
 
 
 def parse_args():
@@ -64,36 +92,6 @@ def parse_args():
     return parser.parse_args()
 
 
-def build_config(args):
-    return {
-        "data": load_coco_datasets(
-            train=args.train_json, test=args.test_json, imgs_dir=args.imgs_dir,
-        ),
-        "config": args.model_cfg,
-        "weights": args.weights,
-        "output": args.work_dir if args.work_dir is not None else Path(__file__).resolve().parents[2] / "runs" / args.run_name,
-        "epochs": args.epochs,
-        "batch": args.batch,
-        "imgsz": args.imgsz,
-        "lr": args.lr,
-        "workers": args.workers,
-        "device": args.device,
-        "resume": args.resume,
-        "classifier": args.classifier,
-    }
-
-
-def update_config(config, opts):
-    opts = list(opts or [])
-    if opts[:1] == ["--"]:
-        opts = opts[1:]
-    if len(opts) % 2:
-        raise ValueError("Config overrides must be KEY VALUE pairs.")
-    # run_training.py merges these into Detectron2's config after applying run defaults.
-    config["opts"] = opts
-    return config
-
-
 def main():
     if len(sys.argv) > 1:
         args = parse_args()
@@ -102,8 +100,7 @@ def main():
         args = deepcopy(DEFAULT_ARGS["detic-swinb"])
 
     config = build_config(args)
-    config = update_config(config, args.opts)
-    return train(config)
+    train(config)
 
 
 if __name__ == "__main__":
