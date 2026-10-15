@@ -9,6 +9,7 @@ from detectron2.utils.logger import setup_logger
 import train_net
 
 from build_config import build_config
+from callbacks import wb_callbacks as callbacks
 
 
 DEFAULT_ARGS = {
@@ -63,8 +64,8 @@ def train(config):
     train_cfg.defrost()
     train_cfg.MODEL.WEIGHTS = ""
     train_cfg.freeze()
-    train_net.do_train(train_cfg, model, resume=config.RESUME)
-    train_net.do_test(train_cfg, model)
+    train_net.do_train(train_cfg, model, resume=config.RESUME, callbacks=callbacks)
+    train_net.do_test(train_cfg, model, callbacks=callbacks)
 
 
 def parse_args():
