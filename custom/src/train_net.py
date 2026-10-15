@@ -53,7 +53,13 @@ from detic.modeling.utils import reset_cls_test
 
 logger = logging.getLogger("detectron2")
 
-def do_test(cfg, model):
+# >>> MOD
+from callbacks import run_callbacks
+#<<< MOD
+
+# >>> MOD
+def do_test(cfg, model, callbacks=None):
+    # <<< MOD
     results = OrderedDict()
     for d, dataset_name in enumerate(cfg.DATASETS.TEST):
         if cfg.MODEL.RESET_CLS_TESTS:
@@ -88,11 +94,19 @@ def do_test(cfg, model):
             logger.info("Evaluation results for {} in csv format:".format(
                 dataset_name))
             print_csv_format(results[dataset_name])
+    # >>> MOD
+    run_callbacks(callbacks, "on_test_end", cfg=cfg, model=model, results=results)
+    #<<< MOD
     if len(results) == 1:
         results = list(results.values())[0]
     return results
 
-def do_train(cfg, model, resume=False):
+# >>> MOD
+def do_train(cfg, model, resume=False, callbacks=None):
+    # <<< MOD
+    # >>> MOD
+    run_callbacks(callbacks, "on_pretrain_routine_start", cfg=cfg, model=model, resume=resume)
+    #<<< MOD
     model.train()
     if cfg.SOLVER.USE_CUSTOM_SOLVER:
         optimizer = build_custom_optimizer(cfg, model)
@@ -181,10 +195,21 @@ def do_train(cfg, model, resume=False):
             data_timer.reset()
             scheduler.step()
 
+            # >>> MOD
+            run_callbacks(
+                callbacks, "on_train_step_end", cfg=cfg, model=model, step=iteration,
+                metrics={**loss_dict_reduced, "total_loss": losses_reduced,
+                         "lr": storage.latest()["lr"][0],
+                         "time": step_time, "data_time": data_time},
+            )
+            #<<< MOD
+
             if (cfg.TEST.EVAL_PERIOD > 0
                 and iteration % cfg.TEST.EVAL_PERIOD == 0
                 and iteration != max_iter):
-                do_test(cfg, model)
+                # >>> MOD
+                do_test(cfg, model, callbacks=callbacks)
+                #<<< MOD
                 comm.synchronize()
 
             if iteration - start_iter > 5 and \
@@ -197,6 +222,10 @@ def do_train(cfg, model, resume=False):
         logger.info(
             "Total training time: {}".format(
                 str(datetime.timedelta(seconds=int(total_time)))))
+
+    # >>> MOD
+    run_callbacks(callbacks, "on_train_end", cfg=cfg, model=model)
+    #<<< MOD
 
 def setup(args):
     """
