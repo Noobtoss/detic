@@ -1,0 +1,3 @@
+# Experiments
+exp_name 03Detic config configs/Detic_LCOCOI21k_CLIP_SwinB_896b32_4x_ft4x_max-size.yaml weights checkpoints/Detic_LCOCOI21k_CLIP_SwinB_896b32_4x_ft4x_max-size.pth
+# Experiments End Current
