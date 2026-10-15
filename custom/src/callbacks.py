@@ -5,7 +5,6 @@ from numbers import Real
 from pathlib import Path
 
 import yaml
-from detectron2.utils import comm
 
 try:
     import wandb as wb
@@ -14,7 +13,7 @@ try:
 except ImportError:
     wb = None
 
-LOG_EVERY_N_STEPS = 20
+LOG_EVERY_N_STEPS = 40
 _step = 0
 
 
@@ -26,21 +25,12 @@ def run_callbacks(callbacks, event, **kwargs):
         callback(**kwargs)
 
 
-def _enabled():
-    mode = os.environ.get("WANDB_MODE", "").lower()
-    return (
-        wb is not None and comm.is_main_process() and mode != "disabled"
-        and (os.environ.get("WANDB_PROJECT") or os.environ.get("WANDB_API_KEY")
-             or mode in ("online", "offline"))
-    )
-
-
-def _flatten(metrics, prefix):
+def _flatten(metrics, prefix, keep_path=True):
     values = {}
     for name, value in metrics.items():
-        key = "{}/{}".format(prefix, name)
+        key = "{}/{}".format(prefix, name).lower()
         if isinstance(value, Mapping):
-            values.update(_flatten(value, key))
+            values.update(_flatten(value, key if keep_path else prefix, keep_path))
         elif isinstance(value, Real) and math.isfinite(value):
             values[key] = float(value)
     return values
@@ -49,7 +39,7 @@ def _flatten(metrics, prefix):
 def on_pretrain_routine_start(cfg, model, resume=False):
     """Start W&B, reusing the saved run ID when resuming this output directory."""
     global _step
-    if not _enabled():
+    if wb is None:
         return
 
     _step = 0
@@ -74,7 +64,7 @@ def on_pretrain_routine_start(cfg, model, resume=False):
 def on_train_step_end(cfg, model, step, metrics):
     """Log every N steps, plus the first and last step (1-based)."""
     global _step
-    if _enabled() and wb.run:
+    if wb and wb.run:
         _step = step
         max_iter = cfg.SOLVER.MAX_ITER if cfg.SOLVER.TRAIN_ITER < 0 else cfg.SOLVER.TRAIN_ITER
         if step == 1 or step % LOG_EVERY_N_STEPS == 0 or step == max_iter:
@@ -82,16 +72,16 @@ def on_train_step_end(cfg, model, step, metrics):
 
 
 def on_test_end(cfg, model, results):
-    """Log evaluation metrics with dataset names to avoid key collisions."""
-    if _enabled() and wb.run:
-        values = _flatten(results, "eval")
+    """Log filtered evaluation metrics as lowercase names under eval/."""
+    if wb and wb.run:
+        values = _flatten(results, "eval", keep_path=False)
         if values:
             wb.run.log({**values, "trainer/step": _step})
 
 
 def on_train_end(cfg, model, exit_code=0):
     """Finish when do_train completes, before the separate final evaluation."""
-    if _enabled() and wb.run:
+    if wb and wb.run:
         wb.run.finish(exit_code=exit_code)
 
 

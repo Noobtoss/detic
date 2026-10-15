@@ -55,6 +55,7 @@ logger = logging.getLogger("detectron2")
 
 # >>> MOD
 from callbacks import run_callbacks
+from coco_evaluator import COCOEvaluator
 #<<< MOD
 
 # >>> MOD
