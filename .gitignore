@@ -1,3 +1,16 @@
+/datasets/
+/datasets_archived/
+/datasets
+/datasets_tar
+/datasets_tar/
+/logs/
+/runs/
+/runs
+/results/
+/results
+/checkpoints/
+/checkpoints
+
 third_party/detectron2
 ./models
 configs-experimental
