@@ -21,8 +21,8 @@ experiments
 # output dir
 index.html
 data/*
-slurm/
-slurm
+#slurm/
+#slurm
 slurm-output
 slurm-output/
 output
