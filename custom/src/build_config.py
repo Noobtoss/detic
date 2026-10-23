@@ -73,7 +73,7 @@ def build_config(args):
     if args.epochs <= 0 or args.batch <= 0 or args.imgsz <= 0:
         raise ValueError("epochs, batch, and imgsz must be positive")
 
-    data = load_coco_datasets(args.train_json, args.test_json, imgs_dir=args.data_dir)
+    data = load_coco_datasets(args.ann_train, args.ann_test, data_dir=args.data_dir)
     if not any(data["train"].values()) or not data["classes"]:
         raise ValueError("The training input contains no images or categories.")
     train_names, ann_types = _register(data)
@@ -125,8 +125,9 @@ def build_config(args):
     cfg.SOLVER.BASE_LR = args.lr
     cfg.SOLVER.WARMUP_ITERS = min(1000, cfg.SOLVER.MAX_ITER // 10)
     cfg.SOLVER.STEPS = ()
-    cfg.SOLVER.CHECKPOINT_PERIOD = steps_per_epoch
-    cfg.TEST.EVAL_PERIOD = steps_per_epoch if cfg.DATASETS.TEST else 0
+    save_every_epochs = 10
+    cfg.SOLVER.CHECKPOINT_PERIOD = steps_per_epoch * save_every_epochs
+    cfg.TEST.EVAL_PERIOD = steps_per_epoch * save_every_epochs if cfg.DATASETS.TEST else 0
     cfg.SOLVER.CLIP_GRADIENTS.CLIP_TYPE = "full_model"
     cfg.OUTPUT_DIR = str(output)
     cfg.merge_from_list(opts)

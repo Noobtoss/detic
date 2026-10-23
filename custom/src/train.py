@@ -17,10 +17,10 @@ DEFAULT_ARGS = {
         run_name="custom_detic",
         work_dir=None,
         model_cfg="/Users/noobtoss/code_nexus/detic/configs/Detic_LCOCOI21k_CLIP_SwinB_896b32_4x_ft4x_max-size.yaml",
-        weights="/Users/noobtoss/code_nexus/detic/checkpoints/Detic_LCOCOI21k_CLIP_SwinB_896b32_4x_ft4x_max-size.pth",
-        train_json=["/Users/noobtoss/code_nexus/detic/datasets/03Detic/annotation_train.json"],
-        test_json=["/Users/noobtoss/code_nexus/detic/datasets/03Detic/annotation_test.json"],
+        ckpt="/Users/noobtoss/code_nexus/detic/checkpoints/Detic_LCOCOI21k_CLIP_SwinB_896b32_4x_ft4x_max-size.pth",
         data_dir="/Users/noobtoss/code_nexus/detic/datasets/03Detic",
+        ann_train="annotation_train.json",
+        ann_test="annotation_test.json",
         epochs=10,
         batch=2,
         imgsz=640,
@@ -69,13 +69,13 @@ def train(config):
 
 def parse_args():
     parser = argparse.ArgumentParser("Detic train parser")
-    parser.add_argument("--run_name", type=str, help="Run name; defaults to output/<run_name>")
-    parser.add_argument("--work_dir", type=Path, help="Explicit output directory")
+    parser.add_argument("--run_name", type=str)
+    parser.add_argument("--work_dir", type=Path)
     parser.add_argument("--model_cfg", type=Path)
-    parser.add_argument("--weights", type=Path)
-    parser.add_argument("--train_json", type=Path, nargs="+", help="Training COCO JSON files")
-    parser.add_argument("--test_json", type=Path, nargs="*", help="Test COCO JSON files; empty disables evaluation")
-    parser.add_argument("--data_dir", type=Path)
+    parser.add_argument("--ckpt", type=Path)
+    parser.add_argument("--data_dir", type=str)
+    parser.add_argument("--ann_train", type=str, default=None)
+    parser.add_argument("--ann_test", type=str, default=None)
     parser.add_argument("--epochs", type=float)
     parser.add_argument("--batch", type=int)
     parser.add_argument("--imgsz", type=int)
@@ -98,6 +98,10 @@ def main():
     else:
         warnings.warn("Running with hardcoded test args")
         args = deepcopy(DEFAULT_ARGS["detic-swinb"])
+
+    args.weights = args.ckpt
+    args.ann_train = str(Path(args.data_dir) / args.ann_train)
+    args.ann_test = str(Path(args.data_dir) / args.ann_test)
 
     config = build_config(args)
     train(config)

@@ -18,7 +18,7 @@ def _read_files(filenames):
     return datasets
 
 
-def _det_class_split(datasets, class_ids, imgs_dir):
+def _det_class_split(datasets, class_ids, data_dir):
     dataset_det, dataset_class = [], []
     image_id = 0
     for filename, coco in datasets:
@@ -47,7 +47,7 @@ def _det_class_split(datasets, class_ids, imgs_dir):
 
             record = {
                 "image_id": image_id,
-                "file_name": str(imgs_dir / image["file_name"]),
+                "file_name": str(data_dir / image["file_name"]),
                 "width": image["width"],
                 "height": image["height"],
             }
@@ -65,16 +65,16 @@ def _det_class_split(datasets, class_ids, imgs_dir):
     return {"detection": dataset_det, "classification": dataset_class}
 
 
-def load_coco_datasets(train, test=None, *, imgs_dir=None):
+def load_coco_datasets(train, test=None, *, data_dir):
     """Accept one COCO path or a list of paths for each split.
 
-    Relative image file names resolve against image_root when supplied,
-    otherwise against their JSON's directory. Absolute file names are preserved.
+    Relative image file names resolve directly against data_dir; no Images
+    subdirectory is added. Absolute file names are preserved.
     Class names align category IDs across files. Images containing both kinds
     of annotations contribute to both groups; unannotated images are detection
     backgrounds. Returned records use Detectron2's zero-based class IDs.
     """
-    imgs_dir = Path(imgs_dir) if imgs_dir is not None else Path(train if isinstance(train, (str, Path)) else train[0]).parent.parent / "Images"  # default to yolox style dataset struct
+    data_dir = Path(data_dir)
     train_files, test_files = _read_files(train), _read_files(test)
     class_ids = {}
     for _, coco in train_files + test_files:
@@ -83,6 +83,6 @@ def load_coco_datasets(train, test=None, *, imgs_dir=None):
                 class_ids[category["name"]] = len(class_ids)
     return {
         "classes": list(class_ids),
-        "train": _det_class_split(train_files, class_ids, imgs_dir),
-        "test": _det_class_split(test_files, class_ids, imgs_dir),
+        "train": _det_class_split(train_files, class_ids, data_dir),
+        "test": _det_class_split(test_files, class_ids, data_dir),
     }

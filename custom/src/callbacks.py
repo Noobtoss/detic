@@ -51,7 +51,7 @@ def on_pretrain_routine_start(cfg, model, resume=False, start_iter=0):
         wb.init(
             project=os.environ.get("WANDB_PROJECT", "runs-detic"),
             name=os.environ.get("WANDB_NAME", output.name),
-            dir=str(output),
+            dir=os.environ.get("WANDB_DIR", str(output)),
             config=yaml.safe_load(cfg.dump()),
             id=run_id,
             resume="allow" if run_id else None,

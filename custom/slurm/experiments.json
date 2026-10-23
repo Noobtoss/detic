@@ -1,0 +1,9 @@
+{
+  "03Detic": {
+    "config": "configs/Detic_LCOCOI21k_CLIP_SwinB_896b32_4x_ft4x_max-size.yaml",
+    "ckpt": "checkpoints/Detic_LCOCOI21k_CLIP_SwinB_896b32_4x_ft4x_max-size.pth",
+    "data_dir": "datasets/03Detic",
+    "ann_train": "annotation_train.json",
+    "ann_test": "annotation_test.json"
+  }
+}
