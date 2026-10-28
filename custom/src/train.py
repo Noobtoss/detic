@@ -19,8 +19,8 @@ DEFAULT_ARGS = {
         model_cfg="/Users/noobtoss/code_hub/detic/configs/Detic_LCOCOI21k_CLIP_SwinB_896b32_4x_ft4x_max-size.yaml",
         ckpt="/Users/noobtoss/code_hub/detic/checkpoints/Detic_LCOCOI21k_CLIP_SwinB_896b32_4x_ft4x_max-size.pth",
         data_dir="/Users/noobtoss/code_hub/detic/datasets/03Detic",
-        ann_train="annotation_train.json",
-        ann_test="annotation_test.json",
+        train_ann="annotation_train.json",
+        test_ann="annotation_test.json",
         epochs=10,
         batch=2,
         imgsz=640,
@@ -74,8 +74,8 @@ def parse_args():
     parser.add_argument("--model_cfg", type=Path)
     parser.add_argument("--ckpt", type=Path)
     parser.add_argument("--data_dir", type=str)
-    parser.add_argument("--ann_train", type=str, default=None)
-    parser.add_argument("--ann_test", type=str, default=None)
+    parser.add_argument("--train_ann", type=str, default=None)
+    parser.add_argument("--test_ann", type=str, default=None)
     parser.add_argument("--epochs", type=float)
     parser.add_argument("--batch", type=int)
     parser.add_argument("--imgsz", type=int)
@@ -100,8 +100,8 @@ def main():
         args = deepcopy(DEFAULT_ARGS["detic-swinb"])
 
     args.weights = args.ckpt
-    args.ann_train = str(Path(args.data_dir) / args.ann_train)
-    args.ann_test = str(Path(args.data_dir) / args.ann_test)
+    args.train_ann = str(Path(args.data_dir) / args.train_ann)
+    args.test_ann = str(Path(args.data_dir) / args.test_ann)
 
     config = build_config(args)
     train(config)

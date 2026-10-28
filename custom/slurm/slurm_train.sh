@@ -68,8 +68,8 @@ python "$ROOT/custom/src/train.py" \
        --model_cfg "$MODEL_CFG" \
        --ckpt "$CKPT" \
        --data_dir "$DATA_DIR" \
-       --ann_train "${KV[ann_train]}" \
-       --ann_test "${KV[ann_test]}" \
+       --train_ann "${KV[train_ann]}" \
+       --test_ann "${KV[test_ann]}" \
        --workers "${SLURM_CPUS_PER_TASK:-1}"
 
 # ----- CLEANUP -----------------------------------------------------
