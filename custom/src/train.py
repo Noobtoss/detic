@@ -16,9 +16,9 @@ DEFAULT_ARGS = {
     "detic-swinb": Namespace(
         run_name="custom_detic",
         work_dir=None,
-        model_cfg="/Users/noobtoss/code_nexus/detic/configs/Detic_LCOCOI21k_CLIP_SwinB_896b32_4x_ft4x_max-size.yaml",
-        ckpt="/Users/noobtoss/code_nexus/detic/checkpoints/Detic_LCOCOI21k_CLIP_SwinB_896b32_4x_ft4x_max-size.pth",
-        data_dir="/Users/noobtoss/code_nexus/detic/datasets/03Detic",
+        model_cfg="/Users/noobtoss/code_hub/detic/configs/Detic_LCOCOI21k_CLIP_SwinB_896b32_4x_ft4x_max-size.yaml",
+        ckpt="/Users/noobtoss/code_hub/detic/checkpoints/Detic_LCOCOI21k_CLIP_SwinB_896b32_4x_ft4x_max-size.pth",
+        data_dir="/Users/noobtoss/code_hub/detic/datasets/03Detic",
         ann_train="annotation_train.json",
         ann_test="annotation_test.json",
         epochs=10,

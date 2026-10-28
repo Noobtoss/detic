@@ -11,7 +11,7 @@
 #SBATCH --mem-per-cpu=64G          # RAM pro CPU Kern #20G #32G #64G
 
 # ----- DIRS --------------------------------------------------------
-ROOT=/nfs/scratch/staff/schmittth/code_nexus/detic
+ROOT=/nfs/scratch/staff/schmittth/code_hub/detic
 export TMPDIR=$(mktemp -d "${TMPDIR:-/tmp}/detic_${SLURM_JOB_ID}_XXXXXX")
 
 # ----- ENVIRONMENT SETUP -------------------------------------------
