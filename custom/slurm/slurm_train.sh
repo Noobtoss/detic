@@ -53,6 +53,8 @@ OUT_DIR="$ROOT/runs/$RUN_NAME"
 MODEL_CFG="$ROOT/${KV[config]}"
 CKPT="$ROOT/${KV[ckpt]}"
 DATA_DIR="$ROOT/${KV[data_dir]}"
+TRAIN_ANN="${KV[train_ann]}"
+TEST_ANN="${KV[test_ann]:-${KV[val_ann]}}"
 
 # ----- WANDB -------------------------------------------------------
 export WANDB_API_KEY=95177947f5f36556806da90ea7a0bf93ed857d58
@@ -68,8 +70,8 @@ python "$ROOT/custom/src/train.py" \
        --model_cfg "$MODEL_CFG" \
        --ckpt "$CKPT" \
        --data_dir "$DATA_DIR" \
-       --train_ann "${KV[train_ann]}" \
-       --test_ann "${KV[test_ann]}" \
+       --train_ann "$TRAIN_ANN" \
+       --test_ann "$TEST_ANN" \
        --workers "${SLURM_CPUS_PER_TASK:-1}"
 
 # ----- CLEANUP -----------------------------------------------------
